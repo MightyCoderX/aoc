@@ -2,7 +2,7 @@ use std::env;
 use std::io::{self, prelude::*, BufReader};
 use std::fs::File;
 
-pub fn part1() -> io::Result<()>
+pub fn main() -> io::Result<()>
 {
     let path = env::args().nth(1).unwrap();
     let file = File::open(path);

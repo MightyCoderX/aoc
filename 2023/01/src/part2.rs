@@ -3,7 +3,7 @@ use std::env;
 use std::io::{self, prelude::*, BufReader};
 use std::fs::File;
 
-pub fn part2() -> io::Result<()>
+pub fn main() -> io::Result<()>
 {
     let path = env::args().nth(1).unwrap();
     let file = File::open(path);
@@ -43,8 +43,8 @@ pub fn part2() -> io::Result<()>
 
         i = 0;
         j = len - 1;
-        i_offset = 1;
-        j_offset = 1;
+        i_offset = 0;
+        j_offset = 0;
 
         println!("#{} len: {len}", n+1);
         
@@ -71,9 +71,9 @@ pub fn part2() -> io::Result<()>
                     }
                     else if buf_first.len() > 5 || (*chars.get(i+1).unwrap_or(&'\0')).is_numeric()
                     {
-                        i = if i < len - 2 { i_offset } else { 0 };
+                        i = 0;
                         i_offset += 1;
-                        buf_first = i_char.to_string();
+                        buf_first = String::new();
                     }
                 }
             }
@@ -94,15 +94,15 @@ pub fn part2() -> io::Result<()>
                     }
                     else if buf_last.len() > 5 || (*chars.get(j+1).unwrap_or(&'\0')).is_numeric()
                     {
-                        j = (len - 1) - j_offset;
+                        j = len - 1;
                         j_offset += 1;
-                        buf_last = j_char.to_string();
+                        buf_last = String::new();
                     }
                 }
             }
             
-            if i < len  { i += 1 }
-            if j > 0    { j -= 1 }
+            if i < len  { i += i_offset }
+            if j > 0    { j -= j_offset }
         }
 
         println!("{first} {last}\n");
