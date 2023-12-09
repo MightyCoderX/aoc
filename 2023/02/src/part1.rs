@@ -13,7 +13,7 @@ pub fn main() -> io::Result<()>
 
     println!("Games: ");
 
-    for line in reader.lines()
+    'top: for line in reader.lines()
     {
         let line = line.unwrap();
         let len = line.len();
@@ -25,15 +25,16 @@ pub fn main() -> io::Result<()>
         let game_id = game.split_once(' ').unwrap().1;
         let sets: Vec<_> = sets.split("; ").collect();
 
-        let mut color_limits = HashMap::from([
-            ("red", 12),
-            ("green", 13),
-            ("blue", 14)
-        ]);
+        let mut color_limits: HashMap<&str, i32>;
 
-        
         for set in sets
         {
+            color_limits = HashMap::from([
+                ("red", 12),
+                ("green", 13),
+                ("blue", 14)
+            ]);
+
             let color_count_pairs:Vec<_> = set.split(", ").collect();
             println!("\t{}", color_count_pairs.len());
 
@@ -47,11 +48,11 @@ pub fn main() -> io::Result<()>
                 
                 color_limits.insert(color, current-count);
             }
-        }
 
-        if color_limits.iter().any(|x| x.1 < &0)
-        {
-            continue;
+            if color_limits.iter().any(|x| x.1 < &0)
+            {
+                continue 'top;
+            }
         }
 
         println!("game_id: {game_id} ");
