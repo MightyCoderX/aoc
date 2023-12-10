@@ -42,13 +42,16 @@ pub fn main() -> io::Result<()>
                 if num_buf.is_empty() { num_start_x = x }
                 num_buf.push(*char);
             }
-            else if !num_buf.is_empty()
+            
+            if !num_buf.is_empty() && (!char.is_ascii_digit() || x == width-1)
             {
                 numbers.push(Number { value: num_buf.parse().unwrap(), x: num_start_x, y });
                 num_buf.clear();
             }
         }
     }
+
+    println!("numbers found: {}", numbers.len());
 
     
     let mut sum = 0;
@@ -57,6 +60,8 @@ pub fn main() -> io::Result<()>
     {
         let mut found_part_number = false;
         let num_len = num.value.to_string().len();
+
+        let mut debug_log = format!("len: {num_len}\n").to_string();
 
         if num.y > 0
         {
@@ -67,44 +72,44 @@ pub fn main() -> io::Result<()>
             // println!("{num:?} {start_x} {end_x}");
             for x in start_x..(end_x as i32)
             {
-                let char = schematic.get(num.y-1).unwrap().get(x as usize).unwrap();
-                print!("{char}");
+                let char = schematic[num.y-1][x as usize];
+                debug_log.push(char);
 
-                if !char.is_alphanumeric() && *char != '.'
+                if !char.is_alphanumeric() && char != '.'
                 {
                     found_part_number = true;
-                    // break;
+                    break;
                 }
             }
         }
 
-        println!();
+        debug_log.push('\n');
 
         if num.x > 0
         {
-            let char = schematic.get(num.y).unwrap().get(num.x - 1).unwrap();
-            print!("{char}");
+            let char = schematic[num.y][num.x - 1];
+            debug_log.push(char);
 
-            if !char.is_alphanumeric() && *char != '.'
+            if !char.is_alphanumeric() && char != '.'
             {
                 found_part_number = true;
             }
         }
 
-        print!("{}", num.value);
+        debug_log.push_str(&num.value.to_string());
 
         if num.x + num_len < width
         {
-            let char = schematic.get(num.y).unwrap().get(num.x + num_len).unwrap();
-            print!("{char}");
+            let char = schematic[num.y][num.x + num_len];
+            debug_log.push(char);
                 
-            if !char.is_alphanumeric() && *char != '.'
+            if !char.is_alphanumeric() && char != '.'
             {
                 found_part_number = true;
             }
         }
 
-        println!();
+        debug_log.push('\n');
 
         if num.y+1 < height
         {
@@ -115,20 +120,24 @@ pub fn main() -> io::Result<()>
             // print!("{num:?} {start_x} {end_x}");
             for x in start_x..(end_x as i32)
             {
-                let char = schematic.get(num.y+1).unwrap().get(x as usize).unwrap();
-                print!("{char}");
+                let char = schematic[num.y+1][x as usize];
+                debug_log.push(char);
                 
-                if !char.is_alphanumeric() && *char != '.'
+                if !char.is_alphanumeric() && char != '.'
                 {
                     found_part_number = true;
-                    // break;
+                    break;
                 }
             }
         }
 
-        println!("\n{found_part_number}\n-------\n");
+        debug_log.push_str(&format!("\n{found_part_number}\n-------\n"));
+        // println!("{debug_log}");
         
-        if !found_part_number { continue }
+        if !found_part_number
+        {
+            continue;
+        }
         
         sum += num.value;
 
