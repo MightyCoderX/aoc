@@ -1,8 +1,6 @@
-use core::num;
 use std::env;
 use std::fs::File;
 use std::io::{self, prelude::*};
-use std::ops::Index;
 
 pub fn main() -> io::Result<()>
 {
@@ -11,49 +9,27 @@ pub fn main() -> io::Result<()>
     let mut buf = String::new();
     let _ = file.read_to_string(&mut buf);
 
-    let chars: Vec<char> = buf.chars().collect();
+    let lines: Vec<_> = buf.lines().collect();
+    let chars: Vec<_> = buf.chars().collect();
 
-    let mut line = 0;
+    let width = lines[0].len();
+    let height = lines.len();
 
-    let width = buf.chars().position(|c| c == '\n').unwrap() + 1;
+    println!("{width}x{height}");
 
-    println!("{width}");
-
-    for (i, char) in buf.chars().enumerate()
+    for (y, line) in buf.lines().enumerate()
     {
-        if char == '\n' { line += 1 }
-        if char != '*' { continue }
-
-        if line > 0
+        
+        for (x, char) in buf.chars().enumerate()
         {
-            let start_idx = i - (i > 0) as usize;
-            let end_idx = i + (chars[i] != '\n') as usize;
+            if char == '*' { continue }
 
-            let mut num_buf = String::new();
-
-            for j in start_idx..end_idx
+            if let c = chars[y*(x -1)].is_ascii_digit()
             {
-                if !chars[j].is_ascii_digit() { continue }
-
-                let mut k = j;
-                while chars[k].is_ascii_digit()
-                {
-                    if !chars[k].is_ascii_digit() { break }
-
-                    num_buf.push(chars[k]);
-
-                    k -= 1;
-                }
-
-                while chars[k].is_ascii_digit()
-                {
-                    if !chars[k].is_ascii_digit() { break }
-
-                    num_buf.push(chars[k]);
-
-                    k -= 1;
-                }
+                
             }
+
+
         }
     }
 
