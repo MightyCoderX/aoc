@@ -1,22 +1,15 @@
 use std::env;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{self, prelude::*};
 use std::fs::File;
 
 pub fn main() -> io::Result<()>
 {
     let path = env::args().nth(1).unwrap();
-    let file = File::open(path);
-    let reader = BufReader::new(file.unwrap());
+    let mut file = File::open(path)?;
+    let mut content = String::new();
+    let _ = file.read_to_string(&mut content);
 
-    for line in reader.lines()
-    {
-        let line = line.unwrap();
-        let len = line.len();
-        let chars = line.chars();
-        let chars: Vec<char> = chars.collect();  
-
-        // Algorithm here
-    }
+    
 
     Ok(())
 }
