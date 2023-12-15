@@ -76,7 +76,7 @@ pub fn main() -> io::Result<()>
                             i+=1;
                         }
 
-                        to_skip = i;
+                        to_skip = i-1;
 
                         println!("\nnum = {buf}");
 
