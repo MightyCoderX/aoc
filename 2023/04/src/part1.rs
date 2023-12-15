@@ -12,14 +12,14 @@ pub fn main() -> io::Result<()> {
     let result = content
         .lines()
         .map(|line| line.split_once(':').unwrap().1.split_once('|'))
-        .map(|game| {
+        .map(|card| {
             (
-                game.unwrap()
+                card.unwrap()
                     .0
                     .split_ascii_whitespace()
                     .map(|n| n.parse().unwrap())
                     .collect::<HashSet<i32>>(),
-                game.unwrap()
+                card.unwrap()
                     .1
                     .split_ascii_whitespace()
                     .map(|n| n.parse().unwrap())
