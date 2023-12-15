@@ -6,6 +6,6 @@ mod part1;
 mod part2;
 
 fn main() -> io::Result<()> {
-    part1::main()
-    // part2::main()
+    // part1::main()
+    part2::main()
 }
