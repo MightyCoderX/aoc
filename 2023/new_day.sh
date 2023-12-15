@@ -10,5 +10,7 @@ echo "Creating day $new_day from template"
 mkdir "$new_day"
 cp -r ./00/. "$new_day"
 
+sed "2 s/day-00/day-${new_day}/g" "$new_day/Cargo.toml"
+
 echo "Done"
 
