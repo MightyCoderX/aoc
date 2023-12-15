@@ -33,12 +33,19 @@ pub fn main() -> io::Result<()>
             let bottom = y + ((y < height) as usize);
             let right = x + ((x < width) as usize);
 
-            println!("{} {} {} {}", top, left, bottom, right);
             
             for ry in top..=bottom
             {
+                let mut to_skip = 0;
                 for rx in left..=right
                 {
+                    if to_skip > 0
+                    {
+                        println!("skipping {:?}", lines[ry][rx]);
+                        to_skip-=1;
+                        continue;
+                    }
+
                     let char = lines[ry][rx];
                     print!("{char}");
                     
@@ -68,17 +75,20 @@ pub fn main() -> io::Result<()>
                             buf.push(lines[ry][rx+i]);
                             i+=1;
                         }
+
+                        to_skip = i;
+
                         println!("\nnum = {buf}");
 
                         ratio *= buf.parse::<i32>().unwrap();
                         part_numbers+=1;
                         
-                        break;
+                        continue;
                     }   
                 }
             }
             
-            println!("-------------------");
+            println!("\n-------------------");
             
             if part_numbers < 2
             {
