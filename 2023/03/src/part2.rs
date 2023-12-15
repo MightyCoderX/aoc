@@ -10,7 +10,7 @@ pub fn main() -> io::Result<()> {
     let mut buf = String::new();
     let _ = file.read_to_string(&mut buf);
 
-    let lines: Vec<_> = buf.lines().map(|l| l.chars().collect::<Vec<_>>()).collect();
+    let lines: Vec<Vec<char>> = buf.lines().map(|l| l.chars().collect::<Vec<_>>()).collect();
 
     let width = lines[0].len();
     let height = lines.len();
@@ -57,32 +57,33 @@ pub fn main() -> io::Result<()> {
                     let char = lines[ry][rx];
 
                     let mut buf = String::new();
-                    if char.is_ascii_digit() {
-                        buf.push(char);
 
-                        let mut i = 1;
+                    if !char.is_ascii_digit() { continue }
+                    
+                    buf.push(char);
 
-                        while lines[ry][rx - i].is_ascii_digit() {
-                            buf.insert(0, lines[ry][rx - i]);
+                    let mut i = 1;
 
-                            if rx - i == 0 {
-                                break;
-                            }
+                    while lines[ry][rx - i].is_ascii_digit() {
+                        buf.insert(0, lines[ry][rx - i]);
 
-                            i += 1;
+                        if rx - i == 0 {
+                            break;
                         }
 
-                        i = 1;
-                        while rx + i < width && lines[ry][rx + i].is_ascii_digit() {
-                            buf.push(lines[ry][rx + i]);
-                            i += 1;
-                        }
-
-                        to_skip = i - 1;
-
-                        ratio *= buf.parse::<i32>().unwrap();
-                        part_numbers += 1;
+                        i += 1;
                     }
+
+                    i = 1;
+                    while rx + i < width && lines[ry][rx + i].is_ascii_digit() {
+                        buf.push(lines[ry][rx + i]);
+                        i += 1;
+                    }
+
+                    to_skip = i - 1;
+
+                    ratio *= buf.parse::<i32>().unwrap();
+                    part_numbers += 1;
 
                     if verbose {
                         if part_numbers > 1 && !buf.is_empty() {
@@ -91,8 +92,6 @@ pub fn main() -> io::Result<()> {
                             println!("PN2 = {buf}");
                         }
                     }
-
-                    
                 }
             }
 
