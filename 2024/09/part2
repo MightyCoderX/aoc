@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+source array_utils
+
+# read stdin into arrays decompressing input
+fileid=()
+filesize=()
+freespace=()
+
+echo reading stdin
+i=0
+while read -rN1 num; do
+	[[ $num == $'\n' ]] && num=0
+	id=$((i / 2))
+	if ((i % 2 == 0)); then
+		fileid[id]=$id
+		filesize[id]=$num
+	else
+		freespace[id]=$num
+	fi
+	((i++))
+done
+
+print_file() {
+	local id=$1
+
+	if [[ "${fileid[*]}" != *"$id"* ]]; then
+		echo "error: invalid file id '$id'" >&2
+		exit 1
+	fi
+
+	local size=${filesize[id]}
+	local free=${freespace[id]}
+
+	echo "id: $id, size: $size, free: $free"
+}
+
+print_files() {
+	local i
+	local len=${#fileid[@]}
+	for ((i = 0; i < len; i++)); do
+		local id=${fileid[i]}
+		local size=${filesize[i]}
+		local free=${freespace[i]}
+		echo "($i) id: $id, size: $size, free: $free"
+	done
+}
+
+print_disk() {
+	local i
+	local len=${#fileid[@]}
+	local out=''
+
+	for ((i = 0; i < len; i++)); do
+		local id=${fileid[i]}
+		local size=${filesize[i]}
+		local free=${freespace[i]}
+
+		local j
+		for ((j = 0; j < size; j++)); do
+			out+=$id
+		done
+		for ((j = 0; j < free; j++)); do
+			out+='.'
+		done
+	done
+
+	echo "$out"
+}
+
+print_files
+# print_disk
+echo
+
+# defragment
+len=${#fileid[@]}
+
+echo defragmenting
+# loop backwards through files and move files from right to
+# the first available space on the left, if not available don't move
+# for ((i = len - 1; i > 0; i--)); do
+i=$((len - 1))
+while ((i > 0)); do
+	to_move=$i
+
+	# echo -e "\tstep $((len - i))/$len"
+
+	for ((j = 0; j < i; j++)); do
+		target=$j
+
+		if ((freespace[target] < filesize[to_move])); then
+			continue
+		fi
+
+		to_move_fileid=${fileid[to_move]}
+		to_move_filesize=${filesize[to_move]}
+		to_move_freespace=${freespace[to_move]}
+		array_remove fileid "$to_move"
+		array_remove filesize "$to_move"
+		array_remove freespace "$to_move"
+
+		echo "moving pos $to_move (id: $to_move_fileid, size: ${to_move_filesize}) after $target (id: ${fileid[target]}, freespace: ${freespace[target]})"
+		for ((k = len - 1; k > target; k--)); do
+			fileid[k + 1]=${fileid[k]}
+			filesize[k + 1]=${filesize[k]}
+			freespace[k + 1]=${freespace[k]}
+		done
+		new_place=$((target + 1))
+		fileid[new_place]=$to_move_fileid
+		filesize[new_place]=$to_move_filesize
+		freespace[new_place]=$((freespace[target] - to_move_filesize))
+
+		# ((to_move++)) # increment since every item has been moved one to the right
+		freespace[target]=0
+		freespace[to_move]=$((freespace[to_move] + to_move_filesize + to_move_freespace))
+
+		# print_disk
+		# print_files
+		continue 2
+	done
+	((i--))
+	# echo
+done
+
+print_disk
+
+# checksum
+checksum=0
+for ((i = 0, idx = 0; i < len; i++)); do
+	id=${fileid[i]}
+	size=${filesize[i]}
+	free=${freespace[i]}
+
+	# echo "id=$id, idx=$idx, size=$size"
+	for ((j = 0; j < size; j++)); do
+		# echo -n "checksum = checksum + $idx * $id = $checksum + $((idx * id))"
+		((checksum += idx * id))
+		# echo " = $checksum"
+		((idx++))
+	done
+
+	((idx += free))
+	# echo
+done
+
+echo "$checksum"

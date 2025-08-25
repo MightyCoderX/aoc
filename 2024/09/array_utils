@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# usage: print_array <array_name>
+# prints array (associative or regular) given it's name
+print_array() {
+	local -n array=$1
+	local k
+	printf '(\n'
+	for k in "${!array[@]}"; do
+		printf '\t[%s]="%s"\n' "$k" "${array["$k"]}"
+	done
+	printf ')\n'
+}
+
+# usage: array_remove <array_name> <index>
+# remove element from array given it's index and fix indexes
+array_remove() {
+	local -n array=$1
+	local index=$2
+
+	unset "array[$index]"
+
+	local i
+	for i in "${!array[@]}"; do
+		((i < index)) && continue
+		array[i - 1]=${array[i]}
+		unset "array[$i]"
+	done
+}
+
+# usage: array_insert <array_name> <index> <new_element>
+# insert new_element in array at given index
+array_insert() {
+	# shellcheck disable=2178 # wtf?
+	local -n array=$1
+	local index=$2
+	local new=$3
+
+	if [[ -z "${array[index]}" ]]; then
+		array[index]=$new
+		return
+	fi
+
+	len=${#array[@]}
+	local i
+	for ((i = len - 1; i >= index; i--)); do
+		array[i + 1]=${array[i]}
+	done
+	echo "${array[new]}"
+	array[index]=$new
+}

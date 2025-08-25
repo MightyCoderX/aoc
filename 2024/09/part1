@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+source array_utils
+
+# read stdin into arrays decompressing input
+blocks=()
+
+echo "reading input"
+i=0
+while read -rN1 num; do
+	[[ $num == $'\n' ]] && num=0
+	id=$((i / 2))
+	if ((i % 2 == 0)); then
+		for ((j = 0; j < num; j++)); do
+			blocks+=("$id")
+		done
+	else
+		for ((j = 0; j < num; j++)); do
+			blocks+=(".")
+		done
+	fi
+	((i++))
+done
+
+print_disk() {
+	printf '%c' "${blocks[@]}"
+	echo
+}
+
+# defrag
+echo "defragmenting"
+len=${#blocks[@]}
+for ((i = len - 1; i > 0; i--)); do
+	to_move=$i
+
+	if (((len - i) % 1000 == 0)); then
+		echo -e "\tstep $((len - i)) of $len"
+	fi
+	for ((j = 0; j < i; j++)); do
+		if [[ "${blocks[j]}" == '.' ]]; then
+			blocks[j]=${blocks[to_move]}
+			blocks[to_move]=.
+			break
+		fi
+	done
+	((j == i)) && break 2
+done
+
+# checksum
+echo "calculating checksum"
+checksum=0
+for ((i = 0; i < len; i++)); do
+	num=${blocks[i]}
+	[[ $num == '.' ]] && break
+	((checksum += num * i))
+done
+
+echo "$checksum"
