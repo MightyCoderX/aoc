@@ -69,7 +69,7 @@ print_disk() {
 }
 
 print_files
-# print_disk
+print_disk
 echo
 
 # defragment
@@ -78,51 +78,60 @@ len=${#fileid[@]}
 echo defragmenting
 # loop backwards through files and move files from right to
 # the first available space on the left, if not available don't move
-# for ((i = len - 1; i > 0; i--)); do
-i=$((len - 1))
-while ((i > 0)); do
+j_offset=0
+for ((i = len - 1; i > 0; i--)); do
 	to_move=$i
 
 	# echo -e "\tstep $((len - i))/$len"
 
-	for ((j = 0; j < i; j++)); do
+	for ((j = j_offset; j < i; j++)); do
 		target=$j
+		# echo "trying to move $to_move (id: ${fileid[to_move]}, size: ${filesize[to_move]}) after $target (id: ${fileid[target]}, free: ${freespace[target]}) (j_offset = $j_offset)"
+
+		#TODO understand why it doesn't work
+		# if ((j == j_offset + 1 && freespace[target] == 0)); then
+		# 	((j_offset++))
+		# fi
 
 		if ((freespace[target] < filesize[to_move])); then
 			continue
 		fi
+		echo "moving $to_move (id: ${fileid[to_move]}, size: ${filesize[to_move]}) after $target (id: ${fileid[target]}, free: ${freespace[target]}) (j_offset = $j_offset)"
 
-		to_move_fileid=${fileid[to_move]}
-		to_move_filesize=${filesize[to_move]}
-		to_move_freespace=${freespace[to_move]}
-		array_remove fileid "$to_move"
-		array_remove filesize "$to_move"
-		array_remove freespace "$to_move"
+		# only move if they aren't next to each other in the actual array
+		if ((to_move - target > 1)); then
+			to_move_fileid=${fileid[to_move]}
+			to_move_filesize=${filesize[to_move]}
+			to_move_freespace=${freespace[to_move]}
+			array_remove fileid "$to_move"
+			array_remove filesize "$to_move"
+			array_remove freespace "$to_move"
 
-		echo "moving pos $to_move (id: $to_move_fileid, size: ${to_move_filesize}) after $target (id: ${fileid[target]}, freespace: ${freespace[target]})"
-		for ((k = len - 1; k > target; k--)); do
-			fileid[k + 1]=${fileid[k]}
-			filesize[k + 1]=${filesize[k]}
-			freespace[k + 1]=${freespace[k]}
-		done
-		new_place=$((target + 1))
-		fileid[new_place]=$to_move_fileid
-		filesize[new_place]=$to_move_filesize
-		freespace[new_place]=$((freespace[target] - to_move_filesize))
+			for ((k = len - 1; k > target; k--)); do
+				fileid[k + 1]=${fileid[k]}
+				filesize[k + 1]=${filesize[k]}
+				freespace[k + 1]=${freespace[k]}
+			done
+			new_place=$((target + 1))
+			fileid[new_place]=$to_move_fileid
+			filesize[new_place]=$to_move_filesize
+			freespace[new_place]=$((freespace[target] - to_move_filesize))
+			freespace[to_move]=$((freespace[to_move] + to_move_filesize + to_move_freespace))
+		else
+			freespace[to_move - 1]=$((freespace[to_move] + to_move_filesize + to_move_freespace))
+		fi
 
-		# ((to_move++)) # increment since every item has been moved one to the right
 		freespace[target]=0
-		freespace[to_move]=$((freespace[to_move] + to_move_filesize + to_move_freespace))
 
 		# print_disk
 		# print_files
-		continue 2
+		((i++))
+		break
 	done
-	((i--))
 	# echo
 done
 
-print_disk
+# print_disk
 
 # checksum
 checksum=0
