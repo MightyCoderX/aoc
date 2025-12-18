@@ -2,6 +2,6 @@
 
 INPUT_FILE=${1:-../input.txt}
 
-while read -r line; do
-	echo "$line"
+while IFS=$'\n' read -r line; do
+    echo "$line"
 done <"$INPUT_FILE"
